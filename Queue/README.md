@@ -1,1 +1,2 @@
-# algorithm_data_structure
+# Queue
+线性队列和链式队列的实现
