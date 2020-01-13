@@ -266,21 +266,6 @@ LIST_NODE_S* CircleList::CircleList_GetCurrent(void)
     return l_stpRet;
 }
 
-#if 0
-LIST_NODE_S* CircleList::CircleList_GetNext(void)
-{
-    LIST_NODE_S* l_stpRet = NULL;
-    
-    if((NULL!=m_stCircleList)&&(NULL!=m_stCircleList->p_stSlider))
-    {
-        l_stpRet = m_stCircleList->p_stSlider;
-        m_stCircleList->p_stSlider = l_stpRet->next;
-    }
-    
-    return l_stpRet;
-}
-#endif
-
 int CircleList::CircleList_Printf(void)
 {
     int l_s32Len = 0;
@@ -302,6 +287,5 @@ int CircleList::CircleList_Printf(void)
 
     return 0;
 }
-
 
 

@@ -12,7 +12,7 @@
 #ifndef __LINK_LIST_QUEUE_H__
 #define __LINK_LIST_QUEUE_H__
  
-#define LINK_LIST_MAX_COUNT		20  /**最大支持链队列数**/
+#define LINK_LIST_MAX_COUNT     20  /**最大支持链队列数**/
  
 /**存储数据**/
 typedef struct link_data  
