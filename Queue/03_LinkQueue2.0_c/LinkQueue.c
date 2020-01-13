@@ -2,7 +2,7 @@
 *Copyright (C),lcb0281at163.com lcb0281atgmail.com
 *FileName: LinkQueue.c
 *BlogAddr: https://blog.csdn.net/li_wen01
-*Description: 
+*Description: 链式存储方式实现队列的功能
 *Date:     2020-01-01
 *Author:   Caibiao Lee
 *Version:  V1.0
@@ -11,134 +11,170 @@
 ***********************************************************/
 #include <malloc.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "LinkQueue.h"
 
-typedef struct _tag_LinkQueueNode TLinkQueueNode;
-struct _tag_LinkQueueNode
+LINK_QUEUE_S* LinkQueue_Create() 
 {
-    TLinkQueueNode* next;
-    void* item;
-};
+    LINK_QUEUE_S* l_pstRet = NULL;
 
-typedef struct _tag_LinkQueue
-{
-    TLinkQueueNode* front;
-    TLinkQueueNode* rear;
-    int length;
-} TLinkQueue;
-
-LinkQueue* LinkQueue_Create() // O(1)
-{
-    TLinkQueue* ret = (TLinkQueue*)malloc(sizeof(TLinkQueue));
-    
-    if( ret != NULL )
+    l_pstRet = (LINK_QUEUE_S*)malloc(sizeof(LINK_QUEUE_S));
+    if(NULL!=l_pstRet)
     {
-        ret->front = NULL;
-        ret->rear = NULL;
-        ret->length = 0;
+        l_pstRet->pstFront = NULL;
+        l_pstRet->pstRear = NULL;
+        l_pstRet->s32Len = 0;
+    }
+
+    return l_pstRet;
+}
+
+int LinkQueue_Destroy(LINK_QUEUE_S* pstQueue) 
+{
+    if(NULL==pstQueue)
+    {
+        printf("%s %d input para error \n",__FUNCTION__,__LINE__);
+        return -1;
     }
     
-    return ret;
+    LinkQueue_Clear(pstQueue);
+    free(pstQueue);
+    pstQueue = NULL;
 }
 
-void LinkQueue_Destroy(LinkQueue* queue) // O(n)
+int LinkQueue_Clear(LINK_QUEUE_S* pstQueue) 
 {
-    LinkQueue_Clear(queue);
-    free(queue);
-}
-
-void LinkQueue_Clear(LinkQueue* queue) // O(n)
-{
-    while( LinkQueue_Length(queue) > 0 )
-    {
-        LinkQueue_Retrieve(queue);
-    }
-}
-
-int LinkQueue_Append(LinkQueue* queue, void* item) // O(1)
-{
-    TLinkQueue* sQueue = (TLinkQueue*)queue;
-    TLinkQueueNode* node = (TLinkQueueNode*)malloc(sizeof(TLinkQueueNode));
-    int ret = (sQueue != NULL ) && (item != NULL) && (node != NULL);
+    LINK_QUEUE_DATA_S l_stData = {0};
     
-    if( ret )
+    if(NULL==pstQueue)
     {
-        node->item = item;
+        printf("%s %d input para error \n",__FUNCTION__,__LINE__);
+        return -1;
+    }
+
+    while(LinkQueue_Length(pstQueue) > 0 )
+    {
+        LinkQueue_Retrieve(pstQueue,&l_stData);
+    }
+
+    return 0;
+}
+
+int LinkQueue_Append(LINK_QUEUE_S* pstQueue, LINK_QUEUE_DATA_S* pstItem) 
+{
+    LINK_QUEUE_S* l_pstLinkQueue = NULL;
+    LINK_QUEUE_NODE_S* l_pstNode = NULL;
+
+    if((NULL==pstQueue)||(NULL==pstItem))
+    {
+        printf("%s %d input para error \n",__FUNCTION__,__LINE__);
+        return -1;
+    }
+
+    l_pstLinkQueue = pstQueue;
+    l_pstNode = (LINK_QUEUE_NODE_S*)malloc(sizeof(LINK_QUEUE_NODE_S));
+    if(NULL==l_pstNode)
+    {
+        printf("%s %d malloc error \n",__FUNCTION__,__LINE__);
+        return -2;
+    }
+    
+    memcpy(&l_pstNode->stData,pstItem,sizeof(LINK_QUEUE_DATA_S));
+          
+    if( l_pstLinkQueue->s32Len > 0 )
+    {
+        l_pstLinkQueue->pstRear->pstNext = l_pstNode;
+        l_pstLinkQueue->pstRear = l_pstNode;
+        l_pstNode->pstNext = NULL;
+    }
+    else
+    {
+        l_pstLinkQueue->pstFront = l_pstNode;
+        l_pstLinkQueue->pstRear = l_pstNode;
+        l_pstNode->pstNext = NULL;
+    }
+    
+    l_pstLinkQueue->s32Len++;
+    
+    return 0;
+}
+
+int LinkQueue_Retrieve(LINK_QUEUE_S* pstQueue,LINK_QUEUE_DATA_S* pData) 
+{
+    LINK_QUEUE_S* l_pstLinkQueue = NULL;
+    LINK_QUEUE_NODE_S* l_pstNode = NULL;
+    
+    if((NULL==pstQueue)||(NULL==pData))
+    {
+        printf("%s %d input data error \n",__FUNCTION__,__LINE__);
+        return -1;
+    }
+
+    l_pstLinkQueue = pstQueue;
+    
+    
+    if( (l_pstLinkQueue != NULL) && (l_pstLinkQueue->s32Len > 0) )
+    {
+        l_pstNode = l_pstLinkQueue->pstFront;
         
-        if( sQueue->length > 0 )
+        l_pstLinkQueue->pstFront = l_pstNode->pstNext;
+        
+        //ret = l_pstNode->stData;
+        memcpy((char *)pData,&l_pstNode->stData,sizeof(LINK_QUEUE_DATA_S));
+        
+        free(l_pstNode);
+        
+        l_pstLinkQueue->s32Len--;
+        
+        if(0==l_pstLinkQueue->s32Len)
         {
-            sQueue->rear->next = node;
-            sQueue->rear = node;
-            node->next = NULL;
+            l_pstLinkQueue->pstFront = NULL;
+            l_pstLinkQueue->pstRear = NULL;
         }
-        else
-        {
-            sQueue->front = node;
-            sQueue->rear = node;
-            node->next = NULL;
-        }
-        
-        sQueue->length++;
-    }
-    
-    if( !ret )
+    }else
     {
-        free(node);
+        return -2;
     }
     
-    return ret;
+    return 0;
 }
 
-void* LinkQueue_Retrieve(LinkQueue* queue) // O(1)
+int LinkQueue_Header(LINK_QUEUE_S* pstQueue,LINK_QUEUE_DATA_S* pstData)
 {
-    TLinkQueue* sQueue = (TLinkQueue*)queue;
-    TLinkQueueNode* node = NULL;
-    void* ret = NULL;
-    
-    if( (sQueue != NULL) && (sQueue->length > 0) )
+    LINK_QUEUE_S* l_pstLinkQueue = (LINK_QUEUE_S*)pstQueue;
+
+    if((NULL==pstQueue)||(NULL==pstData))
     {
-        node = sQueue->front;
-        
-        sQueue->front = node->next;
-        
-        ret = node->item;
-        
-        free(node);
-        
-        sQueue->length--;
-        
-        if( sQueue->length == 0 )
-        {
-            sQueue->front = NULL;
-            sQueue->rear = NULL;
-        }
+        printf("%s %d input data error \n",__FUNCTION__,__LINE__);
+        return -1;        
     }
     
-    return ret;
+    if((l_pstLinkQueue!=NULL)&&(l_pstLinkQueue->s32Len>0))
+    {
+        memcpy(pstData,&l_pstLinkQueue->pstFront->stData,sizeof(LINK_QUEUE_DATA_S));
+    }else
+    {
+        return -2;
+    }
+    
+    return 0;
 }
 
-void* LinkQueue_Header(LinkQueue* queue) // O(1)
+int LinkQueue_Length(LINK_QUEUE_S* pstQueue) 
 {
-    TLinkQueue* sQueue = (TLinkQueue*)queue;
-    void* ret = NULL;
-    
-    if( (sQueue != NULL) && (sQueue->length > 0) )
-    {
-        ret = sQueue->front->item;
-    }
-    
-    return ret;
-}
+    int l_s32Len = 0;
 
-int LinkQueue_Length(LinkQueue* queue) // O(1)
-{
-    TLinkQueue* sQueue = (TLinkQueue*)queue;
-    int ret = -1;
-    
-    if( sQueue != NULL )
+    if(NULL==pstQueue)
     {
-        ret = sQueue->length;
+        printf("%s %d input data error \n",__FUNCTION__,__LINE__);
+        return -1;        
+    }
+
+    if( pstQueue != NULL )
+    {
+        l_s32Len = pstQueue->s32Len;
     }
     
-    return ret;
+    return l_s32Len;
 }

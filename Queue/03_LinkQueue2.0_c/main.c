@@ -1,33 +1,54 @@
+/************************************************************
+*Copyright (C),lcb0281at163.com lcb0281atgmail.com
+*FileName: main.h
+*BlogAddr: https://blog.csdn.net/li_wen01
+*Description: 链式存储方式实现队列的功能
+*Date:     2020-01-01
+*Author:   Caibiao Lee
+*Version:  V1.0
+*Others:
+*History:
+***********************************************************/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "LinkQueue.h"
 
-/* run this program using the console pauser or add your own getch, system("pause") or input loop */
+
 
 int main(int argc, char *argv[]) 
 {
-    LinkQueue* queue = LinkQueue_Create();
-    int a[10] = {0};
-    int i = 0;
-    
-    for(i=0; i<10; i++)
+    LINK_QUEUE_S* l_pstQueue = NULL;
+    LINK_QUEUE_DATA_S l_stData = {0};
+    LINK_QUEUE_DATA_S l_stOutData = {0};
+
+    l_pstQueue = LinkQueue_Create();
+    for(int i=0; i<10; i++)
     {
-        a[i] = i + 1;
+        l_stData.s32Data1++;
         
-        LinkQueue_Append(queue, a + i);
+        LinkQueue_Append(l_pstQueue, &l_stData);
     }
     
-    printf("Header: %d\n", *(int*)LinkQueue_Header(queue));
-    printf("Length: %d\n", LinkQueue_Length(queue));
-    
-    LinkQueue_Clear(queue);
-    
-    while( LinkQueue_Length(queue) > 0 )
+    printf("Length: %d\n", LinkQueue_Length(l_pstQueue));
+
+    if(0==LinkQueue_Header(l_pstQueue,&l_stOutData))
     {
-        printf("Retrieve: %d\n", *(int*)LinkQueue_Retrieve(queue));
+        printf("out put data1=%d \n",l_stOutData.s32Data1);
     }
     
-    LinkQueue_Destroy(queue);
+    LinkQueue_Clear(l_pstQueue);
+    
+    while( LinkQueue_Length(l_pstQueue) > 0 )
+    {
+        if(0==LinkQueue_Header(l_pstQueue,&l_stOutData))
+        {
+            printf("out put data1=%d \n",l_stOutData.s32Data1);
+        }
+    }
+    
+    LinkQueue_Destroy(l_pstQueue);
     
 	return 0;
 }
