@@ -128,7 +128,11 @@ LIST_QUEUE_S *LinkListQueue_Create(int s32Capacity,unsigned char u8QueueNum)
     {
         pstListQueue->s32Length = 0;
         pstListQueue->s32Capacity = s32Capacity;
+        pstListQueue->s8QueueNum = u8QueueNum;
+        pstListQueue->stFront = NULL;
+        pstListQueue->stRear = NULL;
         gs_LinkListUseFlag[u8QueueNum] = 1;
+        LinkListQueue_InitMutex(u8QueueNum);
         return pstListQueue;
     }
     else
@@ -172,6 +176,7 @@ int LinkListQueue_Destroy(LIST_QUEUE_S *pstListQueue)
     }
     
     gs_LinkListUseFlag[pstListQueue->s8QueueNum] = 0;
+    LinkListQueue_ReleaseMutex(pstListQueue->s8QueueNum);
     
     return 0;
 } 
@@ -251,14 +256,18 @@ int LinkListQueue_Output(LIST_QUEUE_S *pstListQueue,LINK_DATA_S *pstLinkData)
         printf("%s %d input para error \n",__FUNCTION__,__LINE__);
         return -1;
     };
+
+    if(pstListQueue->s32Length <=0 ){
+        return -2;
+    }
  
     l_pstQueueNode = pstListQueue->stFront;
     if((NULL==pstListQueue->stRear)||(NULL==pstListQueue->stFront))
     {
         printf("%s %d error\n",__FUNCTION__,__LINE__);
-        return -2;
+        return -3;
     }
- 
+    
     LinkListQueue_Lock(pstListQueue->s8QueueNum);
     if(pstListQueue->stFront==pstListQueue->stRear)
     {
